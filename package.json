@@ -1,7 +1,7 @@
 {
   "name": "jm-apptaccounting",
   "version": "0.1.0",
-  "description": "Jhanvi Meadows Aparment Accounting ",
+  "description": "Jhanvi Meadows Apartment Accounting ",
   "engines": {
     "node": "8.9.1"
   },
