@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Janhavi Meadows Apartment Owner's Association">
+    <meta name="author" content="Mukesh Selvaraj">
+    <title>Janhavi Meadows</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy"
+        crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/stylesheets/dashboard.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
+        crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://appcenter.intuit.com/Content/IA/intuit.ipp.anywhere-1.3.1.js"></script>
+    <script>
+        intuit.ipp.anywhere.setup({
+            grantUrl: 'https://janhavimeadows.herokuapp.com/requestToken',
+            datasources: {
+                quickbooks: true,  // set to false if NOT using Quickbooks API
+                payments: false    // set to true if using Payments API
+            }
+        });
+
+
+        $(document).ready(function () {
+            $("#tblTenants").hide();
+            $("#btnsignout").unbind("click").bind("click", function (e) {
+                e.preventDefault();
+                window.location.assign("/");
+            });
+        });
+
+        function menuclick() {
+            $("#tblTenants").hide("slow");
+            $.get("/api_call/Tenants", function (data) {
+                console.log(JSON.stringify(data, null, 2));
+
+                if (data.customers != null && data.customers != undefined) {
+
+                    var customer = {
+                        CompanyName: "",
+                        FullyQualifiedName: "",
+                        PrimaryPhone: "",
+                        PrimaryEmailAddr: "",
+                        Balance: ""
+                    };
+
+                    data.customers.forEach(element => {
+
+                        customer.CompanyName = element.CompanyName != undefined ? element.CompanyName : "";
+                        customer.FullyQualifiedName = element.FullyQualifiedName != undefined ? element.FullyQualifiedName : "";
+                        customer.PrimaryPhone = element.PrimaryPhone != undefined && element.PrimaryPhone.FreeFormNumber != undefined ? element.PrimaryPhone.FreeFormNumber : "";
+                        customer.PrimaryEmailAddr = element.PrimaryEmailAddr != undefined && element.PrimaryEmailAddr.Address != undefined ? element.PrimaryEmailAddr.Address : "";
+                        customer.Balance = element.Balance != undefined ? element.Balance : "";
+
+                        var markUp =
+                            "<tr>" +
+                            "<td>" + customer.CompanyName + "</td>" +
+                            "<td>" + customer.FullyQualifiedName + "</td>" +
+                            "<td>" + customer.PrimaryPhone + "</td>" +
+                            "<td>" + customer.PrimaryEmailAddr + "</td>" +
+                            "<td>" + customer.Balance + "</td>" +
+                            "</tr>";
+
+                        $("#TenantstBody").append(markUp);
+                        $("#tblTenants").show("slow");
+                        console.log(element.FullyQualifiedName);
+                    });
+
+                }
+            })
+        }
+
+    </script>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+            <a class="navbar-brand" href="#">Janhavi Meadows Apartment Owner's Association</a>
+            <button class="navbar-toggler d-lg-none" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+                <ul class="navbar-nav mr-auto">
+                </ul>
+                <form class="form-inline mt-2 mt-md-0">
+                    <button id="btnsignout" class="btn btn-outline-success my-2 my-sm-0">Sign Out</button>
+                </form>
+            </div>
+        </nav>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-sm-3 col-md-2 d-none d-sm-block bg-light sidebar">
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:menuclick()">Tenants
+                            <span class="sr-only">(current)</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <main role="main" class="col-sm-9 ml-sm-auto col-md-10 pt-3">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="tblTenants">
+                        <thead>
+                            <tr>
+                                <th>Flat#</th>
+                                <th>Tenant</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                <th>Open Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="TenantstBody">
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>

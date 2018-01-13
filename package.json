@@ -1,0 +1,39 @@
+{
+  "name": "jm-apptaccounting",
+  "version": "0.1.0",
+  "description": "Jhanvi Meadows Apparment Accounting ",
+  "engines": {
+    "node": "8.9.1"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test.js"
+  },
+  "author": "Mukesh Selvaraj",
+  "dependencies": {
+    "body-parser": "^1.13.3",
+    "cookie-parser": "^1.3.5",
+    "csrf": "^3.0.6",
+    "ejs": "^2.5.6",
+    "express": "^4.15.2",
+    "express-session": "^1.11.3",
+    "node-quickbooks": "2.0.20",
+    "path": "^0.12.7",
+    "request": "^2.78.0"
+  },
+  "devDependencies": {
+    "request": "^2.81.0",
+    "tape": "^4.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ssmukesh/jm-apptaccounting"
+  },
+  "keywords": [
+    "node",
+    "heroku",
+    "express"
+  ],
+  "license": "MIT"
+}
