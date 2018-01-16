@@ -20,7 +20,8 @@
     "express-session": "^1.11.3",
     "node-quickbooks": "2.0.20",
     "path": "^0.12.7",
-    "request": "^2.78.0"
+    "request": "^2.78.0",
+    "mongoose": "^4.13.5"
   },
   "devDependencies": {
     "request": "^2.81.0",

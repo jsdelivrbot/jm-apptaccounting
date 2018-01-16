@@ -1,0 +1,6 @@
+{
+    "databaseConfig": {
+        "host": "jm_dbadmin:jm1303@ds161021.mlab.com:61021",
+        "database": "jm_accounting"
+    }
+}
