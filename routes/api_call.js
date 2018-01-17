@@ -83,29 +83,80 @@ router.post('/connecttojm', function (req, res) {
         } else {
             console.log('*** getUserInfoByEmail ok');
             userInfo = data;
-            return res.json({ status: { type: "success", msg: "published successfully!" }, statusCode: 200 });
+
+            if (userInfo && userInfo.password === req.body.password) {
+
+                console.log('*** getQBConfig');
+
+                qbconfigRepo.getQBConfig((err, data) => {
+                    if (err) {
+                        console.log('*** getQuickBooksConfig error: ' + util.inspect(err));
+                        qbConfig = null;
+                    } else {
+                        console.log('*** getQuickBooksConfig ok');
+                        if (data.count > 0) {
+
+                            qbConfig = data.qbConfig[0];
+                            //qbConfig.access_token = "";
+                            var QBSDK = getQuickBooksSDK(qbConfig);
+
+                            if (QBSDK) {
+
+                                QBSDK.getCompanyInfo(qbConfig.realmId, function (err, companyInfo) {
+
+                                    if (err) {
+                                        var auth = (new Buffer(qbConfig.consumerKey + ':' + qbConfig.consumerSecret).toString('base64'));
+
+                                        var postBody = {
+                                            url: 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer',
+                                            headers: {
+                                                Accept: 'application/json',
+                                                'Content-Type': 'application/x-www-form-urlencoded',
+                                                Authorization: 'Basic ' + auth,
+                                            },
+                                            form: {
+                                                grant_type: 'refresh_token',
+                                                refresh_token: qbConfig.refresh_token
+                                            }
+                                        };
+
+                                        request.post(postBody, function (e, r, data) {
+                                            var accessToken = JSON.parse(r.body);
+
+                                            qbConfig.access_token = accessToken.access_token;
+                                            qbConfig.refresh_token = accessToken.refresh_token;
+
+                                            qbconfigRepo.saveQBConfig(qbConfig, (err, data) => {
+                                                if (err) {
+                                                    console.log('*** saveQBConfig error: ' + util.inspect(err));
+                                                } else {
+                                                    console.log('*** QBConfig saved successfully!');
+                                                }
+                                            });
+
+                                        });
+                                    }
+                                    else {
+
+                                    }
+
+                                });
+
+                            }
+                        }
+                    }
+                });
+
+            }
         }
     });
 
-    return res.json({ statusCode: 200 });
 });
 
 
-function getQuickBooksConfig() {
+function getQuickBooksSDK(qbConfig) {
 
-    console.log('*** getQuickBooksConfig');
-
-    let qbConfig = new QBConfig();
-
-    qbconfigRepo.getQBConfig((err, data) => {
-        if (err) {
-            console.log('*** getQuickBooksConfig error: ' + util.inspect(err));
-            qbConfig = null;
-        } else {
-            console.log('*** getQuickBooksConfig ok');
-            qbConfig = data.qbConfig;
-        }
-    });
+    console.log('*** getQuickBooksSDK');
 
     if (qbConfig) {
         var qbo = new QuickBooks(qbConfig.consumerKey,
@@ -118,10 +169,16 @@ function getQuickBooksConfig() {
             14, /* minor version */
             '2.0', /* oauth version */
             qbConfig.refresh_token /* refresh token */);
+
+        return qbo;
     }
     else {
         return null;
     }
+
+}
+
+function checkForUnauthorized(req, requestObj, err, response) {
 
 }
 
