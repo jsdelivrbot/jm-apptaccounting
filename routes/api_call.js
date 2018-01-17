@@ -5,6 +5,7 @@ var QuickBooks = require('node-quickbooks');
 
 const mongoose = require('mongoose'),
     Schema = mongoose.Schema,
+    UserInfo = require('../models/userInfo'),
     QBConfig = require('../models/qbconfig');
 
 const qbconfigRepo = require('../lib/qbconfigRepository');
@@ -22,6 +23,73 @@ router.get('/Tenants', function (req, res) {
         });
     }
 });
+
+router.get('/refreshTokens', function (req, res) {
+    var gl = global.GLqbConfig;
+    var auth = (new Buffer(gl.consumerKey + ':' + gl.consumerSecret).toString('base64'));
+
+    var postBody = {
+        url: 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Authorization: 'Basic ' + auth,
+        },
+        form: {
+            grant_type: 'refresh_token',
+            refresh_token: gl.refresh_token
+        }
+    };
+
+    request.post(postBody, function (e, r, data) {
+        var accessToken = JSON.parse(r.body);
+    });
+    return res.json({ statusCode: 200 });
+});
+
+router.post('/saveuserinfo', function (req, res) {
+    console.log("API: saveuserinfo");
+
+    let userInfo = new UserInfo();
+    userInfo.email = req.body.email;
+    userInfo.password = req.body.password;
+
+    qbconfigRepo.saveUserInfo(req.body, (err, data) => {
+        if (err) {
+            console.log('*** saveuserinfo error: ' + util.inspect(err));
+            return res.json({ status: { type: "error", msg: util.inspect(err) }, statusCode: 200 });
+        } else {
+            console.log('*** saveuserinfo ok');
+            userInfo = data.userInfo;
+            return res.json({ status: { type: "success", msg: "saveuserinfo successfully!" }, statusCode: 200 });
+        }
+    });
+
+    return res.json({ statusCode: 200 });
+
+});
+
+router.post('/connecttojm', function (req, res) {
+
+
+    console.log("API: connecttojm");
+
+    let userInfo = new UserInfo();
+
+    qbconfigRepo.getUserInfoByEmail(req.body.email, (err, data) => {
+        if (err) {
+            console.log('*** getUserInfoByEmail error: ' + util.inspect(err));
+            return res.json({ status: { type: "error", msg: util.inspect(err) }, statusCode: 200 });
+        } else {
+            console.log('*** getUserInfoByEmail ok');
+            userInfo = data;
+            return res.json({ status: { type: "success", msg: "published successfully!" }, statusCode: 200 });
+        }
+    });
+
+    return res.json({ statusCode: 200 });
+});
+
 
 function getQuickBooksConfig() {
 

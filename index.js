@@ -142,6 +142,8 @@ app.get('/callback', function (req, res) {
   res.send('<!DOCTYPE html><html lang="en"><head></head><body><script>window.opener.location.assign("/home");window.close();</script></body></html>');
 });
 
+
+
 function saveQBConfig(access_token, realmId, refresh_token) {
 
   console.log('*** saveQBConfig : ');
@@ -152,8 +154,6 @@ function saveQBConfig(access_token, realmId, refresh_token) {
   qbConfig.access_token = access_token;
   qbConfig.realmId = realmId;
   qbConfig.refresh_token = refresh_token;
-
-  QBConfig.remove({});
 
   qbconfigRepo.saveQBConfig(qbConfig, (err, data) => {
     if (err) {
