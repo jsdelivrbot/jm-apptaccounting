@@ -33,6 +33,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.get('/', (req, res) => res.render('pages/qbconnect'));
 app.get('/home', (req, res) => res.render('pages/home'));
+app.get('/login', (req, res) => res.render('pages/signin'));
 app.listen(app.get('port'), function () {
   console.log('Express server listening on port ' + app.get('port'));
 });
@@ -41,7 +42,7 @@ app.listen(app.get('port'), function () {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(session({ resave: false, saveUninitialized: false, secret: 'smith' }));
+app.use(session({ resave: false, saveUninitialized: false, secret: 'JMAccounting' }));
 
 app.use('/api_call', require('./routes/api_call.js'))
 

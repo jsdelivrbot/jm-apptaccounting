@@ -15,36 +15,30 @@ const util = require('util');
 router.get('/Tenants', function (req, res) {
     console.log("API: Tenants");
 
-    var qbo = getQuickBooksConfig();
+    var qbConfig = qbconfigRepo.Session_getQBConfig(req.session);
+    var QBSDK = qbconfigRepo.getQuickBooksSDK(qbConfig);
 
-    if (qbo != undefined && qbo != null) {
-        qbo.findCustomers(function (_, customers) {
-            return res.json({ customers: customers.QueryResponse.Customer, statusCode: 200 });
+    if (QBSDK) {
+        QBSDK.findCustomers(function (err, customers) {
+            if (err) {
+                return res.json({ status: { statusType: "JMA-ST-151", error: util.inspect(err) }, statusCode: 200 });
+            }
+            else {
+                return res.json({
+                    status:
+                        {
+                            statusType: "JMA-ST-1501",
+                            error: util.inspect(err),
+                            QBOData: customers.QueryResponse.Customer
+                        },
+                    statusCode: 200
+                });
+            }
         });
     }
-});
-
-router.get('/refreshTokens', function (req, res) {
-    var gl = global.GLqbConfig;
-    var auth = (new Buffer(gl.consumerKey + ':' + gl.consumerSecret).toString('base64'));
-
-    var postBody = {
-        url: 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer',
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Authorization: 'Basic ' + auth,
-        },
-        form: {
-            grant_type: 'refresh_token',
-            refresh_token: gl.refresh_token
-        }
-    };
-
-    request.post(postBody, function (e, r, data) {
-        var accessToken = JSON.parse(r.body);
-    });
-    return res.json({ statusCode: 200 });
+    else {
+        return res.json({ status: { statusType: "JMA-ST-151", error: null }, statusCode: 200 });
+    }
 });
 
 router.post('/saveuserinfo', function (req, res) {
@@ -79,107 +73,62 @@ router.post('/connecttojm', function (req, res) {
     qbconfigRepo.getUserInfoByEmail(req.body.email, (err, data) => {
         if (err) {
             console.log('*** getUserInfoByEmail error: ' + util.inspect(err));
-            return res.json({ status: { type: "error", msg: util.inspect(err) }, statusCode: 200 });
+            return res.json({ status: { statusType: "JMA-ST-111", error: util.inspect(err) }, statusCode: 200 });
         } else {
             console.log('*** getUserInfoByEmail ok');
             userInfo = data;
 
             if (userInfo && userInfo.password === req.body.password) {
 
-                console.log('*** getQBConfig');
-
-                qbconfigRepo.getQBConfig((err, data) => {
-                    if (err) {
-                        console.log('*** getQuickBooksConfig error: ' + util.inspect(err));
-                        qbConfig = null;
-                    } else {
-                        console.log('*** getQuickBooksConfig ok');
-                        if (data.count > 0) {
-
-                            qbConfig = data.qbConfig[0];
-                            //qbConfig.access_token = "";
-                            var QBSDK = getQuickBooksSDK(qbConfig);
-
-                            if (QBSDK) {
+                qbconfigRepo.QBSDK_getCompanyInfo(req.session, (status) => {
+                    if (status && status.statusType === "JMA-ST-102") { // MongoDB Error                        
+                        return res.json({ status: status, statusCode: 200 });
+                    }
+                    else if (status && status.statusType === "JMA-ST-101") { // Token expired
+                        var qbConfig = qbconfigRepo.Session_getQBConfig(req.session);
+                        qbconfigRepo.refreshToken(qbConfig, (status) => {
+                            if (status && status.statusType === "JMA-ST-103") { // QB Error
+                                return res.json({ status: status, statusCode: 200 });
+                            }
+                            else if (status && status.statusType === "JMA-ST-104") { // MongoDB Error
+                                return res.json({ status: status, statusCode: 200 });
+                            }
+                            else {
+                                var qbConfig = qbconfigRepo.Session_getQBConfig(req.session);
+                                var QBSDK = qbconfigRepo.getQuickBooksSDK(qbConfig);
 
                                 QBSDK.getCompanyInfo(qbConfig.realmId, function (err, companyInfo) {
 
                                     if (err) {
-                                        var auth = (new Buffer(qbConfig.consumerKey + ':' + qbConfig.consumerSecret).toString('base64'));
-
-                                        var postBody = {
-                                            url: 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer',
-                                            headers: {
-                                                Accept: 'application/json',
-                                                'Content-Type': 'application/x-www-form-urlencoded',
-                                                Authorization: 'Basic ' + auth,
-                                            },
-                                            form: {
-                                                grant_type: 'refresh_token',
-                                                refresh_token: qbConfig.refresh_token
-                                            }
-                                        };
-
-                                        request.post(postBody, function (e, r, data) {
-                                            var accessToken = JSON.parse(r.body);
-
-                                            qbConfig.access_token = accessToken.access_token;
-                                            qbConfig.refresh_token = accessToken.refresh_token;
-
-                                            qbconfigRepo.saveQBConfig(qbConfig, (err, data) => {
-                                                if (err) {
-                                                    console.log('*** saveQBConfig error: ' + util.inspect(err));
-                                                } else {
-                                                    console.log('*** QBConfig saved successfully!');
-                                                }
-                                            });
-
-                                        });
+                                        return res.json({ status: { statusType: "JMA-ST-112", error: util.inspect(err) }, statusCode: 200 });
                                     }
                                     else {
-
+                                        qbconfigRepo.Session_saveCompanyInfo(companyInfo);
+                                        qbconfigRepo.Session_saveUserInfo(req.session, userInfo);
+                                        return res.json({ status: { statusType: "JMA-ST-1002", error: null }, statusCode: 200 });
                                     }
 
                                 });
-
                             }
-                        }
+                        });
+                    }
+                    else {
+
+                        qbconfigRepo.Session_saveCompanyInfo(status.QBOData);
+                        qbconfigRepo.Session_saveUserInfo(req.session, userInfo);
+                        return res.json({ status: { statusType: "JMA-ST-1002", error: null }, statusCode: 200 });
+
                     }
                 });
 
+            }
+            else {
+                return res.json({ status: { statusType: "JMA-ST-113", error: null }, statusCode: 200 });
             }
         }
     });
 
 });
 
-
-function getQuickBooksSDK(qbConfig) {
-
-    console.log('*** getQuickBooksSDK');
-
-    if (qbConfig) {
-        var qbo = new QuickBooks(qbConfig.consumerKey,
-            qbConfig.consumerSecret,
-            qbConfig.access_token, /* oAuth access token */
-            false, /* no token secret for oAuth 2.0 */
-            qbConfig.realmId,
-            true, /* use a sandbox account */
-            true, /* turn debugging on */
-            14, /* minor version */
-            '2.0', /* oauth version */
-            qbConfig.refresh_token /* refresh token */);
-
-        return qbo;
-    }
-    else {
-        return null;
-    }
-
-}
-
-function checkForUnauthorized(req, requestObj, err, response) {
-
-}
 
 module.exports = router;

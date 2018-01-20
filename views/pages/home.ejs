@@ -37,9 +37,10 @@
         function menuclick() {
             $("#tblTenants").hide("slow");
             $.get("/api_call/Tenants", function (data) {
-                console.log(JSON.stringify(data, null, 2));
 
-                if (data.customers != null && data.customers != undefined) {
+                console.log(data);
+
+                if (data.status.QBOData != null && data.status.QBOData != undefined) {
 
                     var customer = {
                         CompanyName: "",
@@ -49,7 +50,7 @@
                         Balance: ""
                     };
 
-                    data.customers.forEach(element => {
+                    data.status.QBOData.forEach(element => {
 
                         customer.CompanyName = element.CompanyName != undefined ? element.CompanyName : "";
                         customer.FullyQualifiedName = element.FullyQualifiedName != undefined ? element.FullyQualifiedName : "";
