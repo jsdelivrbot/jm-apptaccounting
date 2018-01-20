@@ -31,9 +31,9 @@ QuickBooks.setOauthVersion('2.0');
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-app.get('/', (req, res) => res.render('pages/qbconnect'));
+app.get('/qbconnect', (req, res) => res.render('pages/qbconnect'));
 app.get('/home', (req, res) => res.render('pages/home'));
-app.get('/login', (req, res) => res.render('pages/signin'));
+app.get('/', (req, res) => res.render('pages/signin'));
 app.listen(app.get('port'), function () {
   console.log('Express server listening on port ' + app.get('port'));
 });
@@ -92,7 +92,7 @@ function generateAntiForgery(session) {
 app.get('/requestToken', function (req, res) {
   var redirecturl = QuickBooks.AUTHORIZATION_URL +
     '?client_id=' + consumerKey +
-    '&redirect_uri=' + encodeURIComponent('http://localhost:5000/callback') +  //Make sure this path matches entry in application dashboard
+    '&redirect_uri=' + encodeURIComponent('https://janhavimeadows.herokuapp.com/callback') +  //Make sure this path matches entry in application dashboard
     '&scope=com.intuit.quickbooks.accounting' +
     '&response_type=code' +
     '&state=' + generateAntiForgery(req.session);
@@ -114,7 +114,7 @@ app.get('/callback', function (req, res) {
     form: {
       grant_type: 'authorization_code',
       code: req.query.code,
-      redirect_uri: 'http://localhost:5000/callback'  //Make sure this path matches entry in application dashboard
+      redirect_uri: 'https://janhavimeadows.herokuapp.com/callback'  //Make sure this path matches entry in application dashboard
     }
   };
 
