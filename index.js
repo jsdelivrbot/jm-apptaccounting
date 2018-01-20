@@ -49,12 +49,12 @@ app.use('/api_call', require('./routes/api_call.js'))
 // INSERT YOUR CONSUMER_KEY AND CONSUMER_SECRET HERE
 
 // SandBox
-var consumerKey = 'Q0q63VIwq7SAQ8v6aop4mol1V6n0jk2lUB5WKu4LPN60wJLgBF';
-var consumerSecret = 'gJaFcxJ8ouAx5RlQSkIjsjhwIUqfYXcP1IHaJeqC';
+// var consumerKey = 'Q0q63VIwq7SAQ8v6aop4mol1V6n0jk2lUB5WKu4LPN60wJLgBF';
+// var consumerSecret = 'gJaFcxJ8ouAx5RlQSkIjsjhwIUqfYXcP1IHaJeqC';
 
 // PRODUCTION  
-// var consumerKey = 'Q0VDE5PpLWcqaT2sZHjjFYHakq2vB6OBqa67Uhm7JrlyOSzski';
-// var consumerSecret = 'FbEwwsfQi6V5DRUbjVAApAYjjMPuuz1161ipI1jg';
+var consumerKey = 'Q0VDE5PpLWcqaT2sZHjjFYHakq2vB6OBqa67Uhm7JrlyOSzski';
+var consumerSecret = 'FbEwwsfQi6V5DRUbjVAApAYjjMPuuz1161ipI1jg';
 
 
 function initCustomMiddleware() {
