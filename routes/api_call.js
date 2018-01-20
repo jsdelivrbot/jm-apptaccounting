@@ -94,20 +94,28 @@ router.post('/connecttojm', function (req, res) {
                                 return res.json({ status: status, statusCode: 200 });
                             }
                             else {
-                                var qbConfig = qbconfigRepo.Session_getQBConfig(req.session);
-                                var QBSDK = qbconfigRepo.getQuickBooksSDK(qbConfig);
 
-                                QBSDK.getCompanyInfo(qbConfig.realmId, function (err, companyInfo) {
-
+                                qbconfigRepo.getQBConfig(req.session, (err, data) => {
                                     if (err) {
-                                        return res.json({ status: { statusType: "JMA-ST-112", error: util.inspect(err) }, statusCode: 200 });
+                                        return res.json({ status: { statusType: "JMA-ST-162", error: err }, statusCode: 200 });
                                     }
                                     else {
-                                        qbconfigRepo.Session_saveCompanyInfo(companyInfo);
-                                        qbconfigRepo.Session_saveUserInfo(req.session, userInfo);
-                                        return res.json({ status: { statusType: "JMA-ST-1002", error: null }, statusCode: 200 });
-                                    }
+                                        var qbConfig = qbconfigRepo.Session_getQBConfig(req.session);
+                                        var QBSDK = qbconfigRepo.getQuickBooksSDK(qbConfig);
 
+                                        QBSDK.getCompanyInfo(qbConfig.realmId, function (err, companyInfo) {
+
+                                            if (err) {
+                                                return res.json({ status: { statusType: "JMA-ST-112", error: util.inspect(err) }, statusCode: 200 });
+                                            }
+                                            else {
+                                                qbconfigRepo.Session_saveCompanyInfo(companyInfo);
+                                                qbconfigRepo.Session_saveUserInfo(req.session, userInfo);
+                                                return res.json({ status: { statusType: "JMA-ST-1002", error: null }, statusCode: 200 });
+                                            }
+
+                                        });
+                                    }
                                 });
                             }
                         });

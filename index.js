@@ -140,7 +140,7 @@ app.get('/callback', function (req, res) {
     //res.render('pages/index');
 
   });
-  res.send('<!DOCTYPE html><html lang="en"><head></head><body><script>window.opener.location.assign("/home");window.close();</script></body></html>');
+  res.send('<!DOCTYPE html><html lang="en"><head></head><body><script>window.opener.location.assign("/");window.close();</script></body></html>');
 });
 
 
