@@ -65,31 +65,29 @@
     <script>
         $("#loginForm").submit(function (event) {
             event.preventDefault();
-            progressbar(true);
+            // progressbar(true);
             var userInfo =
                 {
                     email: $("#inputEmail").val(),
                     password: $("#inputPassword").val()
                 };
 
+
+
             $.ajax({
                 type: 'POST',
                 data: JSON.stringify(userInfo),
                 contentType: 'application/json',
-                url: '/api_call/connecttojm',
+                xhrFields: { withCredentials: true },
+                cache: false,
+                url: 'https://janhavimeadows-api.herokuapp.com/api/userInfo/connecttojm',
                 success: function (data) {
                     progressbar(false);
-                    // progressbar(false);
-                    // $.notify("published successfully!", "success");
-                    if (data && data.status.statusType === "JMA-ST-1002") {
-                        window.location = "home";
-                    }
                     console.log(data);
+                    window.location = "home";
                 },
                 error: function () {
                     progressbar(false);
-                    // progressbar(false);
-                    // $.notify("something went wrong!", "error");
                     console.log('error');
                 }
             });

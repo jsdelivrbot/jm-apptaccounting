@@ -32,48 +32,94 @@
                 e.preventDefault();
                 window.location.assign("/");
             });
+            getCompanyInfo(refreshToken);
         });
+
+        function refreshToken() {
+            $.ajax({
+                url: 'https://janhavimeadows-api.herokuapp.com/api/refreshtoken',
+                type: 'GET',
+                xhrFields: { withCredentials: true },
+                cache: false,
+                success: function (data) {
+                    console.log(data);
+
+                    if (data && data.status && data.status.statusType === "JMA-ST-162") { // Token Expired
+                        console.log(data);
+                    }
+                    else {
+                        getCompanyInfo();
+                    }
+                }
+            });
+        }
+
+        function getCompanyInfo(callback) {
+            $.ajax({
+                url: 'https://janhavimeadows-api.herokuapp.com/api/qbSDK/getCompanyInfo',
+                type: 'GET',
+                xhrFields: { withCredentials: true },
+                cache: false,
+                success: function (data) {
+                    console.log(data);
+
+                    if (data && data.status && data.status.statusType === "JMA-ST-151") { // Token Expired
+                        console.log(data);
+                        if (callback) {
+                            callback();
+                        }
+                    }
+                    else {
+                        console.log(data);
+                    }
+                }
+            });
+        }
 
         function menuclick() {
             $("#tblTenants").hide("slow");
-            $.get("/api_call/Tenants", function (data) {
 
-                console.log(data);
 
-                if (data.status.QBOData != null && data.status.QBOData != undefined) {
 
-                    var customer = {
-                        CompanyName: "",
-                        FullyQualifiedName: "",
-                        PrimaryPhone: "",
-                        PrimaryEmailAddr: "",
-                        Balance: ""
-                    };
+            // $.get("http://localhost:3000/api/qbSDK/getCompanyInfo", function (data) {
 
-                    data.status.QBOData.forEach(element => {
+            //     console.log(data);
 
-                        customer.CompanyName = element.CompanyName != undefined ? element.CompanyName : "";
-                        customer.FullyQualifiedName = element.FullyQualifiedName != undefined ? element.FullyQualifiedName : "";
-                        customer.PrimaryPhone = element.PrimaryPhone != undefined && element.PrimaryPhone.FreeFormNumber != undefined ? element.PrimaryPhone.FreeFormNumber : "";
-                        customer.PrimaryEmailAddr = element.PrimaryEmailAddr != undefined && element.PrimaryEmailAddr.Address != undefined ? element.PrimaryEmailAddr.Address : "";
-                        customer.Balance = element.Balance != undefined ? element.Balance : "";
+            //     if (data.status.QBOData != null && data.status.QBOData != undefined) {
 
-                        var markUp =
-                            "<tr>" +
-                            "<td>" + customer.CompanyName + "</td>" +
-                            "<td>" + customer.FullyQualifiedName + "</td>" +
-                            "<td>" + customer.PrimaryPhone + "</td>" +
-                            "<td>" + customer.PrimaryEmailAddr + "</td>" +
-                            "<td>" + customer.Balance + "</td>" +
-                            "</tr>";
+            //         var customer = {
+            //             CompanyName: "",
+            //             FullyQualifiedName: "",
+            //             PrimaryPhone: "",
+            //             PrimaryEmailAddr: "",
+            //             Balance: ""
+            //         };
 
-                        $("#TenantstBody").append(markUp);
-                        $("#tblTenants").show("slow");
-                        console.log(element.FullyQualifiedName);
-                    });
+            //         data.status.QBOData.forEach(element => {
 
-                }
-            })
+            //             customer.CompanyName = element.CompanyName != undefined ? element.CompanyName : "";
+            //             customer.FullyQualifiedName = element.FullyQualifiedName != undefined ? element.FullyQualifiedName : "";
+            //             customer.PrimaryPhone = element.PrimaryPhone != undefined && element.PrimaryPhone.FreeFormNumber != undefined ? element.PrimaryPhone.FreeFormNumber : "";
+            //             customer.PrimaryEmailAddr = element.PrimaryEmailAddr != undefined && element.PrimaryEmailAddr.Address != undefined ? element.PrimaryEmailAddr.Address : "";
+            //             customer.Balance = element.Balance != undefined ? element.Balance : "";
+
+            //             var markUp =
+            //                 "<tr>" +
+            //                 "<td>" + customer.CompanyName + "</td>" +
+            //                 "<td>" + customer.FullyQualifiedName + "</td>" +
+            //                 "<td>" + customer.PrimaryPhone + "</td>" +
+            //                 "<td>" + customer.PrimaryEmailAddr + "</td>" +
+            //                 "<td>" + customer.Balance + "</td>" +
+            //                 "</tr>";
+
+            //             $("#TenantstBody").append(markUp);
+            //             $("#tblTenants").show("slow");
+            //             console.log(element.FullyQualifiedName);
+            //         });
+
+            //     }
+            // })
+
         }
 
     </script>
